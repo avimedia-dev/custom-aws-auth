@@ -1,0 +1,60 @@
+service: custom-auth-demo
+
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: eu-west-1
+  environment:
+    USERS_TABLE: ${self:service}-${sls:stage}-users
+    JWT_SECRET: my-dev-secret-32-bytes-long-123456 # For demo only!
+    IS_OFFLINE: ${env:IS_OFFLINE, 'false'}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+      Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.USERS_TABLE}"
+
+functions:
+  register:
+    handler: src/register.handler
+    events:
+      - http:
+          path: /register
+          method: post
+          cors: true
+
+  login:
+    handler: src/login.handler
+    events:
+      - http:
+          path: /login
+          method: post
+          cors: true
+
+  profile:
+    handler: src/protected.handler
+    events:
+      - http:
+          path: /profile
+          method: get
+          cors: true
+
+resources:
+  Resources:
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.USERS_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: email
+            KeyType: HASH
+
+plugins:
+  - serverless-offline
