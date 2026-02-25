@@ -8,7 +8,7 @@ A minimal, production-ready authentication system using:
 
 Perfect for learning or as a starter template!
 
-![Demo](https://via.placeholder.com/800x400?text=Login+→+Profile+Demo) <!-- Replace with actual GIF -->
+![Demo](custom-auth-demo.gif)
 
 ---
 
